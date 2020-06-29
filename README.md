@@ -13,7 +13,7 @@ An API for H.P. Lovecraft's Works' [Electronic Texts](https://www.hplovecraft.co
 
 In order for the server to function properly, you need initialize the database and set some environment variables.
 
-Database (SQLite3 in this case) can have a table defined in the following way:
+Database (RDBMS being SQLite in this case) can have a table defined in the following way:
 
 ```sql
 CREATE TABLE IF NOT EXISTS texts (
