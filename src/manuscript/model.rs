@@ -12,6 +12,7 @@ pub enum Sort {
 
 #[derive(Debug, Deserialize)]
 pub enum Category {
+    All,
     Fiction,
     Poetry,
     Essay,
@@ -25,7 +26,7 @@ impl std::fmt::Display for Category {
 }
 
 #[derive(Serialize, FromRow)]
-pub struct Text {
+pub struct Manuscript {
     pub id: i32,
     pub category: String,
     pub title: String,
@@ -41,7 +42,7 @@ pub struct Entry {
 }
 
 #[derive(Serialize, FromRow)]
-pub struct Texts {
+pub struct Manuscripts {
     pub entries: Vec<Entry>,
 }
 
@@ -51,12 +52,12 @@ pub struct Parameters {
     pub sort: Option<Sort>,
 }
 
-impl Responder for Texts {
+impl Responder for Manuscripts {
     type Error = Error;
     type Future = Ready<Result<HttpResponse, Error>>;
 
     fn respond_to(self, _request: &HttpRequest) -> Self::Future {
-        let body = serde_json::to_string(&self).expect("Failed to serialize texts!");
+        let body = serde_json::to_string(&self).expect("Failed to serialize manuscripts!");
 
         ready(Ok(HttpResponse::Ok()
             .content_type("application/json")
@@ -64,14 +65,14 @@ impl Responder for Texts {
     }
 }
 
-impl Texts {
+impl Manuscripts {
     pub async fn find_all(pool: &SqlitePool, sort: &Sort) -> Result<Vec<Entry>> {
-        let mut texts = vec![];
+        let mut manuscripts = vec![];
 
         let records = sqlx::query!(
             r#"
                 SELECT id, category, title, description
-                FROM texts
+                FROM manuscript
                 ORDER BY id;
             "#
         )
@@ -79,7 +80,7 @@ impl Texts {
         .await?;
 
         for record in records {
-            texts.push(Entry {
+            manuscripts.push(Entry {
                 id: record.id,
                 category: record.category,
                 title: record.title,
@@ -89,10 +90,10 @@ impl Texts {
 
         match sort {
             Sort::Ascending => (),
-            Sort::Descending => texts.reverse(),
+            Sort::Descending => manuscripts.reverse(),
         }
 
-        Ok(texts)
+        Ok(manuscripts)
     }
 
     pub async fn find_all_by_category(
@@ -100,12 +101,12 @@ impl Texts {
         category: &Category,
         sort: &Sort,
     ) -> Result<Vec<Entry>> {
-        let mut texts = vec![];
+        let mut manuscripts = vec![];
 
         let records = sqlx::query!(
             r#"
                 SELECT id, category, title, description
-                FROM texts
+                FROM manuscript
                 WHERE category = ?
                 ORDER BY id;
             "#,
@@ -115,7 +116,7 @@ impl Texts {
         .await?;
 
         for record in records {
-            texts.push(Entry {
+            manuscripts.push(Entry {
                 id: record.id,
                 category: record.category,
                 title: record.title,
@@ -125,24 +126,24 @@ impl Texts {
 
         match sort {
             Sort::Ascending => (),
-            Sort::Descending => texts.reverse(),
+            Sort::Descending => manuscripts.reverse(),
         }
 
-        Ok(texts)
+        Ok(manuscripts)
     }
 
-    pub async fn find_by_id(id: i32, pool: &SqlitePool) -> Result<Text> {
+    pub async fn find_by_id(id: i32, pool: &SqlitePool) -> Result<Manuscript> {
         let record = sqlx::query!(
             r#"
                 SELECT id, category, title, content
-                FROM texts WHERE id = $1;
+                FROM manuscript WHERE id = $1;
             "#,
             id
         )
         .fetch_one(&*pool)
         .await?;
 
-        Ok(Text {
+        Ok(Manuscript {
             id: record.id,
             category: record.category,
             title: record.title,

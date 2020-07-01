@@ -16,7 +16,7 @@ In order for the server to function properly, you need initialize the database a
 Database (RDBMS being SQLite in this case) can have a table defined in the following way:
 
 ```sql
-CREATE TABLE IF NOT EXISTS texts (
+CREATE TABLE IF NOT EXISTS manuscript (
     id          INTEGER PRIMARY KEY NOT NULL,
     category    TEXT NOT NULL,
     title       TEXT NOT NULL UNIQUE,
@@ -28,8 +28,8 @@ CREATE TABLE IF NOT EXISTS texts (
 You can then insert any data that you like (preferably public domain H.P. Lovecraft's works), like so:
 
 ```sql
-INSERT INTO texts (category, title, content, description)
-VALUES ('Category', 'The Title', 'The content of the text.', 'The description of the text.');
+INSERT INTO manuscript (category, title, content, description)
+VALUES ('Category', 'The Title', 'The content of the manuscript.', 'The description of the manuscript.');
 ```
 
 As for the environment variables, here is an example (`.env` file):
@@ -37,17 +37,17 @@ As for the environment variables, here is an example (`.env` file):
 ```sh
 HOST=127.0.0.1
 PORT=3000
-DATABASE_URL="sqlite://database/texts.db"
+DATABASE_URL="sqlite://database/manuscript.db"
 RUST_LOG=lovecraft_api=info,actix=info,actix_web=info
 CERTIFICATE="cert.pem"
 CERTIFICATE_KEY="key.pem"
 ```
 
-Regarding routes, please visit the `/api/v1/texts` endpoint for the main content!
+Regarding routes, please visit the `/api/v1/manuscripts` endpoint for the main content!
 
 Available routes:
-- GET `/texts` -> array of entry objects consisting of: id, category, title, description
-- GET `/texts/{id}` -> text object consisting of: id, category, title, content
+- GET `/manuscripts` -> array of entry objects consisting of: id, category, title, description
+- GET `/manuscripts/{id}` -> manuscript object consisting of: id, category, title, content
 
 For the complete API design and documentation (does not fully match the application's functionality in terms of error results), you can take a look at the [OpenAPI Specification based API documentation](https://github.com/GiorgiBeriashvili/lovecraft-api/blob/master/api.yaml "API documentation").
 
@@ -59,7 +59,7 @@ server.bind(format!("{}:{}", host, port))?
 
 Here are the sample responses:
 
-- `/texts`:
+- `/manuscripts`:
 
 ```json
 [
@@ -67,25 +67,25 @@ Here are the sample responses:
         "id": 1,
         "category": "Category",
         "title": "The Title",
-        "description": "The description of the text."
+        "description": "The description of the manuscript."
     },
     {
         "id": 2,
         "category": "Category",
         "title": "The Title",
-        "description": "The description of the text."
+        "description": "The description of the manuscript."
     }
 ]
 ```
 
-- `/texts/1`:
+- `/manuscripts/1`:
 
 ```json
 {
     "id": 1,
     "category": "Category",
     "title": "The Title",
-    "content": "The content of the text."
+    "content": "The content of the manuscript."
 }
 ```
 
